@@ -1,24 +1,28 @@
 import datetime
 import time
 import uuid
+from uuid import UUID
+import random
 from typing import Optional
+
 
 from bson import ObjectId
 from pydantic import BaseModel, EmailStr, Field
 
+
 class UserSchema(BaseModel):
-    id: uuid.UUID = Field(default=uuid.uuid4())
+    id: str = Field(default=random.randint(1, 10000))
     first_name: str = Field()
     last_name: str = Field()
     email: EmailStr = Field()
-    password: str = Field(...)
+    password: str = Field()
     created_at: datetime.datetime = Field(default=datetime.datetime.now())
     updated_at: datetime.datetime = Field(default=datetime.datetime.now())
 
     class Config:
+        orm_mode = True
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
                 "first_name": "John",
