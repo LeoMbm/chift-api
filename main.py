@@ -20,7 +20,7 @@ from schemas.Token import Token
 app = FastAPI()
 origins = [
     "http://localhost",
-    "http://localhost:3000",
+    "https://chift-leombm.vercel.app",
 ]
 app.add_middleware(
     CORSMiddleware,
