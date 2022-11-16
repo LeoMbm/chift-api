@@ -1,11 +1,14 @@
 from datetime import timedelta
 from typing import Any
 
-from fastapi import FastAPI, Body, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+import xmlrpc.client
 
-from api.utils import get_current_user
+from fastapi.middleware.cors import CORSMiddleware
+
+from api.utils import get_current_user, connect_to_odoo_instance, get_user_from_odoo
 from controllers.user import account
 from core import security
 from core.settings import settings
@@ -15,14 +18,28 @@ from schemas.Users import UserSchema, ResponseModel
 from schemas.Token import Token
 
 app = FastAPI()
-
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/register")
-def register_user(
+def RegisterUserView(
         user_in: UserSchema, db: Session = Depends(get_db)
 ):
+    """
+    Sign up a user and hashinh his password.
+    """
+    # Try to retrieve the user with email and if exists throw exception
     user = account.get_by_email(db, email=user_in.email)
-    print(user_in)
+
     if user:
         raise HTTPException(
             status_code=400,
@@ -33,9 +50,12 @@ def register_user(
 
 
 @app.post("/login", response_model=Token)
-def login_user(
+def LoginUserView(
         db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
+    """
+    Sign in a user and giving him a jwt token.
+    """
     user = account.authenticate(
         db, email=form_data.username, password=form_data.password
     )
@@ -51,9 +71,27 @@ def login_user(
 
 
 @app.get("/user", response_model=UserSchema)
-def get_user_via_token(db: Session = Depends(get_db), current_user: UserAccount = Depends(get_current_user),
-) -> Any:
+def GetUserViaTokenView(db: Session = Depends(get_db), current_user: UserAccount = Depends(get_current_user),
+                       ) -> Any:
     """
     Get current user.
     """
     return current_user
+
+
+@app.get("/odoo")
+def UserFromOdooView(current_user: UserAccount = Depends(get_current_user)):
+    """
+    Get user from Odoo Instance
+    """
+    uid = connect_to_odoo_instance(settings.CHIFT_URL,
+                                    settings.CHIFT_DB,
+                                    settings.CHIFT_USERNAME,
+                                    settings.CHIFT_PASSWORD)
+    if not uid:
+        raise HTTPException(status_code=400, detail="Unable to connect to Chift instance")
+    data = get_user_from_odoo(settings.CHIFT_URL,
+                              settings.CHIFT_DB,
+                              uid,
+                              settings.CHIFT_PASSWORD)
+    return data

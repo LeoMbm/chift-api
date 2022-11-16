@@ -28,9 +28,7 @@ class UserSchema(BaseModel):
                 "first_name": "John",
                 "last_name": "Wallace",
                 "email": "jwallace@me.com",
-                "created_at": "DATETIME",
-                "updated_at": "DATETIME"
-
+                "password": "HelloWorld123"
             }
         }
 

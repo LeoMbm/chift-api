@@ -7,11 +7,10 @@
     * [x] Create schema for user
 * [x] Start Project
 * [x] Defined structure
-* [] Add user to db
-* [] User can register/login
-* [] caching ? redis ?  
-
-* [] Refactor all project !  
+* [x] Add user to db
+* [x] User can register/login
+* [] Fetch to Odoo to get contact
+* [x] Refactor all project !  
  
 
 ### Questions
