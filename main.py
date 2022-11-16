@@ -21,6 +21,7 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "https://chift-leombm.vercel.app",
+    "https://chift.vercel.app"
 ]
 app.add_middleware(
     CORSMiddleware,
